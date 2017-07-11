@@ -82,7 +82,7 @@ class App extends React.Component {
 					case 83: top = 4; action = 'run-left2'; break;
 				}
 			})
-			this.setState({ left, top, action, blood: -5 });
+			this.setState({ left, top, action, blood: 0 });
 		}
 	}
 	dieEvent() {

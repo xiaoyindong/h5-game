@@ -68,7 +68,6 @@ class Opera extends React.Component {
 		this.props.stop && this.props.stop();
 	}
 	check(val, e) {
-		console.log(val, e);
 		e.preventDefault();
 		e.stopPropagation();
 		e.nativeEvent.stopImmediatePropagation();

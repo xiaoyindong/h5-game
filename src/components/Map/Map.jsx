@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { getStyle } from '../Utils';
+import Person from '../Person';
 require('./style');
 class Map extends React.Component {
 	constructor(props) {
@@ -35,10 +36,17 @@ class Map extends React.Component {
 		}, 16)
 		
 	}
+	dieEvent() {
+		console.log('机器人死亡');
+	}
 	render() {
+		const arr = [];
+		for (let i = 0; i < 30; i++) {
+			arr.push(<Person key={i} personInfo={{name: '张三2', level: 1}} AI={true} blood={0} dieEvent={this.dieEvent.bind(this)} />)
+		}
 		return (
 			<div className="map-wrap" ref={c => this.background = c}>
-
+				{arr}
 			</div>
 		)
 	}
