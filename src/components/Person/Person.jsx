@@ -13,8 +13,8 @@ class Person extends React.Component {
 		this.times = 0;
 	}
 	componentDidMount() {
-		const { action, AI } = this.props;
-		this.person.style.cssText = 'background: url(../../images/' + (action || 'default-right') + '.gif?temp=' + Math.random() + '); background-repeat: no-repeat;background-size: cover';
+		const { action, AI, left, top } = this.props;
+		this.person.style.cssText = 'background: url(../../images/' + (action || 'default-right') + '.gif?temp=' + Math.random() + '); background-repeat: no-repeat;background-size: cover; left:' + left + 'px; top: ' + top + 'px';
 		if (AI) {
 			let Item = Actions[random(0, Actions.length)];
 			this.move(Item.action, Item.left, Item.top, Item.tmp);
@@ -32,21 +32,34 @@ class Person extends React.Component {
 	move(action, left, top, random) {
 		clearInterval(this.moveTime);
 		this.moveTime = setInterval(() => {
-			this.person.style.cssText = 'background: url(../../images/' + (action || 'default-right') + '.gif?temp=' + random + '); background-repeat: no-repeat;background-size: cover; left:' + (getStyle(this.person, 'left') + left) + 'px; top: ' + (getStyle(this.person, 'top') + top) + 'px';
+			let disX = (getStyle(this.person, 'left') + left);
+			let disY = (getStyle(this.person, 'top') + top);
+			if (disX < 200 || disX > 2050) {
+				if (action.indexOf('right') !== -1) {
+					action = action.replace('right', 'left');
+				} else {
+					action = action.replace('left', 'right');
+				}
+				left = -left;
+			}
+			if (disY < 280|| disY > 900) {
+				top = -top;
+			}
+			this.person.style.cssText = 'background: url(../../images/' + (action || 'default-right') + '.gif?temp=' + random + '); background-repeat: no-repeat;background-size: cover; left:' + disX + 'px; top: ' + disY + 'px';
 		}, 14)
 	}
 	componentDidUpdate(prop) {
 		if (!this.canOpera) {
 			return;
 		}
-		const { action, time, defaultActiom, AI, blood, id, dieEvent, personInfo } = this.props;
+		const { action, time, defaultActiom, AI, blood, id, dieEvent, personInfo, left, top } = this.props;
 		this.current += (blood || 0);
 		const percent = this.current / this.blood * 100 + '%';
 		this.bloodLine.style.width = percent;
 		if (this.current <= 0) {
 			this.canOpera = false;
 			dieEvent && dieEvent(personInfo.id);
-			this.person.style.cssText = 'background: url(../../images/' + (action.indexOf('right') !== -1 ? 'die-right' : 'die-left') + '.gif??temp=' + Math.random() + '); background-repeat: no-repeat;background-size: cover';
+			this.person.style.cssText = 'background: url(../../images/' + (action.indexOf('right') !== -1 ? 'die-right' : 'die-left') + '.gif??temp=' + Math.random() + '); background-repeat: no-repeat;background-size: cover; left:' + left + 'px; top: ' + top + 'px';
 			let timer = null;
 			let opacity = 1;
 			setTimeout(() => {
@@ -79,11 +92,11 @@ class Person extends React.Component {
 		}
 	}
 	render() {
-		const { personInfo } = this.props;
+		const { personInfo, preClass } = this.props;
 		return (
 			<div
 				ref={c => this.person = c}
-				className="person-warp"
+				className={`${preClass} person-warp`}
 			>
 				<div className="person-info">
 					<div className="person-name">{personInfo.name}</div>

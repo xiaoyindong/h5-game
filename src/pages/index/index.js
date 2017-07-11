@@ -93,7 +93,7 @@ class App extends React.Component {
 		return (
 			<div id="wrap" onKeyDown={this.KeyDown.bind(this)}>
 				<Map left={this.state.left} top={this.state.top} />
-				<Person action={this.state.action} time={this.time} defaultActiom={this.action} personInfo={{name: '张三', level: 1}} AI={false} blood={this.state.blood} dieEvent={this.dieEvent.bind(this)} />
+				<Person preClass={''} action={this.state.action} time={this.time} defaultActiom={this.action} personInfo={{name: '张三', level: 1}} AI={false} blood={this.state.blood} dieEvent={this.dieEvent.bind(this)} />
 			</div>
 		)
 	}
