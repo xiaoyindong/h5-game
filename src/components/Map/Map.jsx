@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { getStyle, random } from '../Utils';
+import { getStyle, random, getPerson } from '../Utils';
 import Person from '../Person';
 require('./style');
 class Map extends React.Component {
@@ -42,8 +42,8 @@ class Map extends React.Component {
 		console.log('机器人死亡');
 	}
 	loadPerson() {
-		for (let i = 0; i < 40; i++) {
-			this.persons.push(<Person left={random(220, 2000)} top={random(280, 900)} preClass={'person-ai'} key={i} personInfo={{name: '张三2', level: 1}} AI={true} blood={0} dieEvent={this.dieEvent.bind(this)} />)
+		for (let i = 0; i < 5; i++) {
+			this.persons.push(<Person left={random(220, 1800)} top={random(280, 900)} preClass={'person-ai'} key={i} personInfo={getPerson()} AI={true} blood={0} dieEvent={this.dieEvent.bind(this)} />)
 		}
 	}
 	render() {

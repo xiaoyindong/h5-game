@@ -1,3 +1,8 @@
+// import Persons from './Persons';
+// export const getPerson = () => {
+// 	return Persons;
+// }
+
 export const getStyle = (obj, attr) => {
 	if (obj.currentStyle) {
 		return parseFloat(obj.currentStyle[attr]);
@@ -16,4 +21,17 @@ export const random = (Min, Max) => {
 	const Rand = Math.random();
 	const num = Min + Math.round(Rand * Range); //四舍五入
 	return num;
+}
+import NAME from './NAME';
+export const getPerson = (Min, Max) => {
+	const name = NAME[random(0, NAME.length)] + NAME[random(0, NAME.length)] + NAME[random(0, NAME.length)];
+	const level = random(1, 9);
+	const tools = [];
+	const evil = random(1000, 2000);
+	return {
+		name,
+		level,
+		tools,
+		evil
+	};
 }
