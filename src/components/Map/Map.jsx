@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { getStyle, random, getPerson } from '../Utils';
 import Person from '../Person';
 require('./style');
+window.persons = []; // 机器人
 class Map extends React.Component {
 	constructor(props) {
 		super(props);
@@ -38,12 +39,16 @@ class Map extends React.Component {
 		}, 16)
 		
 	}
-	dieEvent() {
-		console.log('机器人死亡');
+	dieEvent(info) {
+		const { id, personInfo } = info;
+		console.log(personInfo.name + '被杀死');
+		window.persons.forEach((item, idx) => {
+			window.persons.splice(idx, (item.props.id === id ? 1 : 0));
+		})
 	}
 	loadPerson() {
-		for (let i = 0; i < 5; i++) {
-			this.persons.push(<Person left={random(220, 1800)} top={random(280, 900)} preClass={'person-ai'} key={i} personInfo={getPerson()} AI={true} blood={0} dieEvent={this.dieEvent.bind(this)} />)
+		for (let i = 0; i < 1; i++) {
+			this.persons.push(<Person ref={c => window.persons.push(c)} id={i + 100001} left={random(220, 1800)} top={random(280, 900)} preClass={'person-ai'} key={i} personInfo={getPerson()} AI={true} blood={0} dieEvent={this.dieEvent.bind(this)} />)
 		}
 	}
 	render() {

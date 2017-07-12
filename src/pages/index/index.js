@@ -13,6 +13,7 @@ class App extends React.Component {
 			left: 0,
 			top: 0,
 			action: 'default-right',
+			attack: 0
 		}
 		this.Opera = true;
 		this.code = [];
@@ -42,17 +43,18 @@ class App extends React.Component {
 		let top = 0;
 		let action = '';
 		this.time = 0;
+		let attack = 0;
 		this.code.forEach((code) => {
 			switch (code) {
-				case 68: left = 4; action = 'run-right2'; this.action = 'default-right'; break;
-				case 65: left = -4; action = 'run-left2'; this.action = 'default-left'; break;
-				case 87: top = -4; action = 'run-right2'; this.action = 'default-right'; break;
-				case 83: top = 4; action = 'run-left2'; this.action = 'default-left'; break;
-				case 74: action = this.action === 'default-right' ? 'fowradL-right' : 'fowradL-left'; this.time = 900; break;
-				case 75: action = this.action === 'default-right' ? 'qianci-right' : 'qianci-left'; this.time = 900; break;
-				case 76: action = this.action === 'default-right' ? 'lianzhao-right' : 'lianzhao-left'; this.time = 2600; break;
+				case 68: left = 3; action = 'run-right2'; this.action = 'default-right'; break;
+				case 65: left = -3; action = 'run-left2'; this.action = 'default-left'; break;
+				case 87: top = -3; action = 'run-right2'; this.action = 'default-right'; break;
+				case 83: top = 3; action = 'run-left2'; this.action = 'default-left'; break;
+				case 74: action = this.action === 'default-right' ? 'fowradL-right' : 'fowradL-left'; this.time = 900; attack = 1; break;
+				case 75: action = this.action === 'default-right' ? 'qianci-right' : 'qianci-left'; this.time = 900; attack = 2; break;
+				case 76: action = this.action === 'default-right' ? 'lianzhao-right' : 'lianzhao-left'; this.time = 2600; attack = 3; break;
+				default : action = 'default-right'; this.action = 'default-right'; break;
 			}
-
 		});
 		this.code.forEach((code) => {
 			if (code === 68) {
@@ -61,7 +63,7 @@ class App extends React.Component {
 				action = 'run-left2';
 			}
 		})
-		this.setState({ left, top, action });
+		this.setState({ left, top, action, attack });
 	}
 	keyUp(e) {
 		const code = e.keyCode;
@@ -93,7 +95,17 @@ class App extends React.Component {
 		return (
 			<div id="wrap" onKeyDown={this.KeyDown.bind(this)}>
 				<Map left={this.state.left} top={this.state.top} />
-				<Person preClass={''} action={this.state.action} time={this.time} defaultActiom={this.action} personInfo={{name: '张三', level: 1}} AI={false} blood={this.state.blood} dieEvent={this.dieEvent.bind(this)} />
+				<Person
+					preClass={''}
+					action={this.state.action}
+					time={this.time}
+					defaultActiom={this.action}
+					personInfo={{name: '张三', level: 1}}
+					AI={false}
+					attack={this.state.attack}
+					blood={this.state.blood}
+					dieEvent={this.dieEvent.bind(this)}
+				/>
 			</div>
 		)
 	}
