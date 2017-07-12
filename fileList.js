@@ -16,7 +16,6 @@ const readFile = (path, filesMap, bool) => {
     });
 }
 
-
 const geFileMap = (path, bool) => {
     const filesMap = JSON.parse(JSON.stringify({}));
     readFile(path, filesMap, bool);
