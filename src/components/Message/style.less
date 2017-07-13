@@ -1,0 +1,63 @@
+.message-wrap {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    width: 240px;
+    height: 110px;
+    padding: 5px;
+    border: 2px solid #2d2116;
+    border-left: none;
+    background: rgba(95, 50, 12, 0.5);
+    color: #82efea;
+    .message-list {
+        height: 90px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        width: 100%;
+        word-break: break-all;
+        .message-price {
+            display: flex;
+            .info-type {
+                min-width: 36px;
+            }
+            .username {
+                min-width: 36px;
+                max-width: 60px;
+                overflow: hidden;
+            }
+        }
+    }
+    .message-class {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        width: 100%;
+        button {
+            width: 16.6%;
+            background: #58422d;
+            border-color: #d5c1a6;
+            line-height: 14px;
+            color: #e3e4e6;
+            outline: none;
+        }
+        button:nth-last-of-type(1) {
+            width: 17%;
+        }
+    }
+    .message-send {
+        position: absolute;
+        bottom: -20px;
+        left: 0px;
+        width: 100%;
+        border-top: 1px solid #2d2116;
+        border-right: 2px solid #2d2116;
+        border-bottom: 2px solid #2d2116;
+        overflow: hidden;
+        input {
+            width: 100%;
+            outline: none;
+            border: none;
+            text-indent: 3px;
+        }
+    }
+}

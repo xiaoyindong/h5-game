@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom';
 import Opera from '../../components/Opera';
 import Map from '../../components/Map';
 import Person from '../../components/Person';
-
+import Message from '../../components/Message';
 require('./style');
-
+window.AIPersonSystem = []; // 机器人
 class App extends React.Component {
 	constructor(props) {
 		super(props);
@@ -29,6 +29,9 @@ class App extends React.Component {
 			return;
 		}
 		const code = e.keyCode;
+		if (code === 13 || window.EnterText) { // 阻止动作 空格键或聊天
+			return;
+		}
 		let off = true;
 		this.code.forEach((key) => {
 			if (key === code) {
@@ -50,9 +53,9 @@ class App extends React.Component {
 				case 65: left = -3; action = 'run-left2'; this.action = 'default-left'; break;
 				case 87: top = -3; action = 'run-right2'; this.action = 'default-right'; break;
 				case 83: top = 3; action = 'run-left2'; this.action = 'default-left'; break;
-				case 74: action = this.action === 'default-right' ? 'fowradL-right' : 'fowradL-left'; this.time = 900; attack = 1; break;
-				case 75: action = this.action === 'default-right' ? 'qianci-right' : 'qianci-left'; this.time = 900; attack = 2; break;
-				case 76: action = this.action === 'default-right' ? 'lianzhao-right' : 'lianzhao-left'; this.time = 2600; attack = 3; break;
+				case 74: action = this.action === 'default-right' ? 'fowradL-right' : 'fowradL-left'; this.time = 900; attack = 3; break;
+				case 75: action = this.action === 'default-right' ? 'qianci-right' : 'qianci-left'; this.time = 900; attack = 4; break;
+				case 76: action = this.action === 'default-right' ? 'lianzhao-right' : 'lianzhao-left'; this.time = 2600; attack = 5; break;
 				default : action = 'default-right'; this.action = 'default-right'; break;
 			}
 		});
@@ -89,12 +92,12 @@ class App extends React.Component {
 	}
 	dieEvent() {
 		this.Opera = false;
-		console.log('死亡')
+		console.log('玩家死亡');
 	}
 	render() {
 		return (
 			<div id="wrap" onKeyDown={this.KeyDown.bind(this)}>
-				<Map left={this.state.left} top={this.state.top} />
+				<Map left={this.state.left} top={this.state.top}  ref={ c => window.MapSystem = c}  />
 				<Person
 					preClass={''}
 					action={this.state.action}
@@ -106,6 +109,7 @@ class App extends React.Component {
 					blood={this.state.blood}
 					dieEvent={this.dieEvent.bind(this)}
 				/>
+				<Message ref={ c => window.MessageSystem = c} />
 			</div>
 		)
 	}

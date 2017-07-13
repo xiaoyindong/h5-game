@@ -1,13 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { getStyle, random } from '../Utils';
-import Actions from './Actions';
+import { NoHarm, SingleAttack, GroupAttack} from './AIActionList';
 require('./style');
 class Person extends React.Component {
 	constructor(props) {
 		super(props);
-
-		this.blood = props.personInfo.level * 50;
+		this.blood = 5 + (props.personInfo.level * 5) + (props.personInfo.level - 0);
 		this.current = this.blood
 		this.canOpera = true;
 		this.times = 0;
@@ -17,18 +16,18 @@ class Person extends React.Component {
 		const { action, AI, left, top } = this.props;
 		this.person.style.cssText = 'background: url(../../images/' + (action || 'default-right') + '.gif?temp=' + Math.random() + '); background-repeat: no-repeat;background-size: cover; left:' + left + 'px; top: ' + top + 'px';
 		if (AI) {
-			let Item = Actions[random(0, Actions.length)];
+			let Item = SingleAttack[random(0, SingleAttack.length)];
 			this.AIAction = Item.action;
-			this.move(Item.action, Item.left, Item.top, Item.tmp);
+			this.move(Item.action, Item.left, Item.top, Math.random());
 			const timer = setInterval(() => {
 				if (this.current <= 0) { // 没血的时候静止不动;
 					clearInterval(timer);
 				}
 				if (this.times > Item.time) {
 					this.times = 100;
-					Item = Actions[random(0, Actions.length)];
+					Item = SingleAttack[random(0, SingleAttack.length)];
 					this.AIAction = Item.action;
-					this.move(Item.action, Item.left, Item.top, Item.tmp);
+					this.move(Item.action, Item.left, Item.top, Math.random());
 				}
 				this.times += 100;
 			}, 100)
@@ -59,6 +58,7 @@ class Person extends React.Component {
 		}, 14)
 	}
 	componentDidUpdate(prop) {
+		clearTimeout(this.beforeAttack);
 		if (!this.canOpera) {
 			return;
 		}
@@ -76,13 +76,14 @@ class Person extends React.Component {
 			this.Attack(attack);
 		}
 		this.chuck();
-
 	}
 	chuck() {
+		clearTimeout(this.beforeAction);
 		const { action, time, defaultActiom } = this.props;
+		let aaa = true;
 		this.person.style.cssText = 'background: url(../../images/' + action + '.gif?temp=' + Math.random() + '); background-repeat: no-repeat;background-size: cover';
 		if (time) { // 攻击之后还原;
-			setTimeout(() => {
+			this.beforeAction = setTimeout(() => { // 
 				if (!this.person) {
 					return;
 				}
@@ -91,24 +92,42 @@ class Person extends React.Component {
 		}
 	}
 	Attack(attack) {
-		window.persons.forEach(function (item) {
-			item.Beaten(-500);
-		}, this);
+		const left = getStyle(this.person, 'left');
+		const top = getStyle(this.person, 'top');
+		const Person = window.AIPersonSystem[0].getPosition();
+		const MAP = window.MapSystem.getPosition();
+		const Mleft = MAP.left;
+		const Mtop = MAP.top;
+		this.beforeAttack = setTimeout(() => {
+			window.AIPersonSystem.forEach(function (item, idx) {
+				const position = item.getPosition();
+				const Pleft = position.left;
+				const Ptop = position.top;
+				if (Pleft + Mleft >= left - 65 && Pleft + Mleft <= left + 65 && Ptop + Mtop >= top - 35 && Ptop + Mtop <= top + 35 ) {
+					item.Beaten(attack, this.props.personInfo);
+					// if (idx + 1 === )
+				}
+			}, this);
+		}, 200);
 	}
-	Beaten(blood) {
+	Beaten(blood, killUser) {
 		if (!this.person) {
 			return;
 		}
+		blood += (killUser.level * 0.6) + 1;
+		blood = Math.round(blood);
 		let { action } = this.props;
 		const { personInfo, dieEvent, AI } = this.props;
-		this.current += (blood || 0);
+		this.current -= (blood || 0);
 		this.current = this.current < 0 ? 0 : this.current;
 		const percent = this.current / this.blood * 100 + '%';
 		this.bloodLine.style.width = percent;
 		action = AI ? this.AIAction : action; // 机器人死亡和玩家死亡不一样
 		if (this.current <= 0) {
 			this.canOpera = false;
-			dieEvent && dieEvent(this.props);
+			setTimeout(() => {
+				dieEvent && dieEvent(this.props, killUser);
+			});
 			let disX = getStyle(this.person, 'left');
 			let disY = getStyle(this.person, 'top');
 			
@@ -131,6 +150,12 @@ class Person extends React.Component {
 	}
 	addBlood() {
 
+	}
+	getPosition() {
+		return {
+			left: getStyle(this.person, 'left'),
+			top: getStyle(this.person, 'top')
+		}
 	}
 	render() {
 		const { personInfo, preClass } = this.props;

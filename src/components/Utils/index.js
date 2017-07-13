@@ -35,3 +35,7 @@ export const getPerson = (Min, Max) => {
 		evil
 	};
 }
+
+export const radar = () => {
+	// 雷达;
+}

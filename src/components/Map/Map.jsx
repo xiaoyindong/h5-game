@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { getStyle, random, getPerson } from '../Utils';
 import Person from '../Person';
 require('./style');
-window.persons = []; // 机器人
 class Map extends React.Component {
 	constructor(props) {
 		super(props);
@@ -13,7 +12,9 @@ class Map extends React.Component {
 		this.persons = [];
 	}
 	componentDidMount() {
-		this.loadPerson();
+		setTimeout(() => {
+			this.loadPerson();
+		})
 	}
 	componentDidUpdate(props) {
 		const {left, top} = this.props;
@@ -34,26 +35,34 @@ class Map extends React.Component {
 			} else if (this.top <= -800) {
 				this.top = -800;
 			}
-			this.background.style.top = this.top + 'px';
-			this.background.style.left = this.left + 'px ';
+			this.position.style.top = this.top + 'px';
+			this.position.style.left = this.left + 'px ';
 		}, 16)
-		
 	}
-	dieEvent(info) {
+	dieEvent(info, killUser) {
 		const { id, personInfo } = info;
-		console.log(personInfo.name + '被杀死');
-		window.persons.forEach((item, idx) => {
-			window.persons.splice(idx, (item.props.id === id ? 1 : 0));
+		const { name } = killUser;
+		const message= '惊！！' + personInfo.name + '被' + name + '杀死了';
+		window.MessageSystem.addMessage(message, 'system', 'system', 'all');
+		window.AIPersonSystem.forEach((item, idx) => {
+			window.AIPersonSystem.splice(idx, (item.props.id === id ? 1 : 0));
 		})
 	}
 	loadPerson() {
-		for (let i = 0; i < 1; i++) {
-			this.persons.push(<Person ref={c => window.persons.push(c)} id={i + 100001} left={random(220, 1800)} top={random(280, 900)} preClass={'person-ai'} key={i} personInfo={getPerson()} AI={true} blood={0} dieEvent={this.dieEvent.bind(this)} />)
+		for (let i = 0; i < 5; i++) {
+			this.persons.push(<Person ref={c => window.AIPersonSystem.push(c)} id={i + 100001} left={random(220, 1800)} top={random(280, 900)} preClass={'person-ai'} key={i} personInfo={getPerson()} AI={true} blood={0} dieEvent={this.dieEvent.bind(this)} />)
+		}
+		// this.setState({ refresh: Math.random()});
+	}
+	getPosition() {
+		return {
+			left: getStyle(this.position, 'left'),
+			top: getStyle(this.position, 'top')
 		}
 	}
 	render() {
 		return (
-			<div className="map-wrap" ref={c => this.background = c}>
+			<div className="map-wrap" ref={c => this.position = c}>
 					{
 						this.persons
 					}
