@@ -324,7 +324,7 @@ export const NoHarm = [
 
 export const UseSkill = [ // 使用技能
     { // 恢复
-        action: 'fowradT-left',
+        action: 'qunfire-left',
         left: 0,
         top: 0,
         time: 2500,
@@ -332,7 +332,7 @@ export const UseSkill = [ // 使用技能
         hurt: 0,
     },
     {
-        action: 'fowradT-right',
+        action: 'qunfire-right',
         left: 0,
         top: 0,
         time: 2500,
@@ -364,7 +364,7 @@ export const SingleAttack = [
         action: 'fowradR-left',
         left: 0,
         top: 0,
-        time: 2500,
+        time: 1250,
         skill: 1,
         hurt: 2.3,
         track: false
@@ -373,7 +373,7 @@ export const SingleAttack = [
         action: 'fowradR-right',
         left: 0,
         top: 0,
-        time: 2500,
+        time: 1250,
         skill: 1,
         hurt: 2.3,
         track: false
@@ -382,7 +382,7 @@ export const SingleAttack = [
         action: 'fowradT-left',
         left: 0,
         top: 0,
-        time: 2000,
+        time: 1000,
         skill: 1,
         hurt: 1.8,
         track: false
@@ -391,7 +391,7 @@ export const SingleAttack = [
         action: 'fowradT-right',
         left: 0,
         top: 0,
-        time: 2000,
+        time: 1000,
         skill: 1,
         hurt: 1.8,
         track: false
@@ -400,7 +400,7 @@ export const SingleAttack = [
         action: 'lianzhao-left',
         left: 0,
         top: 0,
-        time: 2400,
+        time: 2500,
         skill: 1,
         track: false,
         hurt: 3.5
@@ -409,7 +409,7 @@ export const SingleAttack = [
         action: 'lianzhao-left',
         left: 0,
         top: 0,
-        time: 2400,
+        time: 2500,
         skill: 1,
         track: false,
         hurt: 3.5
@@ -418,7 +418,7 @@ export const SingleAttack = [
         action: 'jifei-left',
         left: 0,
         top: 0,
-        time: 1800,
+        time: 1400,
         skill: 1,
         track: false,
         hurt: 1
@@ -427,7 +427,7 @@ export const SingleAttack = [
         action: 'jifei-right',
         left: 0,
         top: 0,
-        time: 1800,
+        time: 1400,
         skill: 1,
         track: false,
         hurt: 1
@@ -436,7 +436,7 @@ export const SingleAttack = [
         action: 'qianci-left',
         left: 0,
         top: 0,
-        time: 1800,
+        time: 1150,
         skill: 1,
         track: false,
         hurt: 1.2
@@ -445,7 +445,7 @@ export const SingleAttack = [
         action: 'qianci-right',
         left: 0,
         top: 0,
-        time: 1800,
+        time: 1150,
         skill: 1,
         track: false,
         hurt: 1.2
@@ -454,7 +454,7 @@ export const SingleAttack = [
         action: 'zhongpi-left',
         left: 0,
         top: 0,
-        time: 1800,
+        time: 1050,
         skill: 1,
         track: false,
         hurt: 2.8
@@ -463,7 +463,7 @@ export const SingleAttack = [
         action: 'zhongpi-left',
         left: 0,
         top: 0,
-        time: 1800,
+        time: 1050,
         skill: 1,
         track: false,
         hurt: 2.8
@@ -472,19 +472,19 @@ export const SingleAttack = [
 
 export const GroupAttack = [
     { // 群体攻击
-        action: 'fowradT-left',
+        action: 'qunfire-left',
         left: 0,
         top: 0,
-        time: 2500,
+        time: 2000,
         skill: 2,
         hurt: 2.5,
         range: 'all'
     },
     {
-        action: 'fowradT-right',
+        action: 'qunfire-right',
         left: 0,
         top: 0,
-        time: 2500,
+        time: 2000,
         skill: 2,
         hurt: 2.5,
         range: 'all'
@@ -493,7 +493,7 @@ export const GroupAttack = [
         action: 'fowradL-left',
         left: 0,
         top: 0,
-        time: 2500,
+        time: 1200,
         skill: 2,
         hurt: 2,
         range: 3
@@ -502,7 +502,7 @@ export const GroupAttack = [
         action: 'fowradL-right',
         left: 0,
         top: 0,
-        time: 2500,
+        time: 1200,
         skill: 2,
         hurt: 2,
         range: 3

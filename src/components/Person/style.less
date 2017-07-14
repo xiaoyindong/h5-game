@@ -23,16 +23,36 @@
                 border: 1px solid #999;
                 div {
                     width: 100%;
-                    height: 6px;
+                    height: 5px;
                     background: red;
                 }
             }
         }
+        .magic {
+            padding: 0 60px 0 40px;
+            .wrap {
+                margin-top: 2px;
+                border: 1px solid #999;
+                div {
+                    width: 100%;
+                    height: 3px;
+                    background: blue;
+                }
+            }
+        }
         .person-level {
-            color: red;
+            // color: red;
             padding: 0 40px;
-            span {
+            overflow: hidden;
+            .level {
                 color: red;
+                float: left;
+            }
+            .nickname {
+                font-size: 9px;
+                float: right;
+                padding-right: 20px;
+                color: #fff;
             }
         }
     }

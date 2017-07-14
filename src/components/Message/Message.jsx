@@ -24,14 +24,16 @@ class Message extends React.Component {
 	Enter(e) {
 		const code = e.keyCode;
 		if (code === 13) {
-			if (!this.message && this.message !== '0') {
+			if (this.state.display === 'none') {
 				window.EnterText = true;
 				this.setState({ display: 'block' }); // 显示输入框
 				this.input.focus();
 			} else {
-				this.addMessage(this.message, 'common', '张三', 'all');
-				this.message = '';
-				this.input.value = '';
+				if (this.message || this.message === '0') {
+					this.addMessage(this.message, 'common', window.USERINFO.name, 'all');
+					this.message = '';
+					this.input.value = '';
+				}
 				window.EnterText = false;
 				this.setState({ display: 'none' }); // 隐藏输入框
 			}
@@ -54,13 +56,17 @@ class Message extends React.Component {
 	RenderMessage() {
 		const messArr = [];
 		this.messageList && this.messageList.forEach((item, idx) => {
+			let title = '[传闻]';
+			switch (item.type) {
+				case 'system' : title = '[系统]'; break;
+				case 'common' : title = '[世界]'; break;
+			}
 			messArr.push(
 				<div key={idx} className="message-price">
-					<div className="info-type">[传闻]</div>
+					<div className="info-type">{title}</div>
 					{
-						item.type === 'system' ?
-						null :
-						<div className="username">{`[${item.from}]`}:</div>
+						item.type === 'common' ?
+						<div className="username">{`[${item.from}]`}:</div> : null
 					}
 					<div className="message-content">{item.message}</div>
 				</div>
