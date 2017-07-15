@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { getStyle, random } from '../Utils';
+import { deepCopy, getStyle, random, getBlood, getMagic, getExperience, getHurt, getHurtRange, ArrayPush, ArrayDelete, ArrayContains } from '../Utils';
 import { NoHarm, SingleAttack, GroupAttack } from './AIActionList';
 require('./style');
 class Person extends React.Component {
@@ -9,14 +9,18 @@ class Person extends React.Component {
 		this.state = {
 			reflush: 1
 		}
+		this.attackList= {}; // 主动攻击的用户; 用于计算主动被动;
+		this.byattackList= {}; // 被动攻击的用户; 用于计算主动被动 
 		this.level = props.personInfo.level;
-		this.blood = 5 + (props.personInfo.level * 5) + (props.personInfo.level - 0);
-		this.magic = 3 + (props.personInfo.level * 3) + (props.personInfo.level - 0);
+		this.blood = getBlood(props.personInfo);
+		this.magic = getMagic(props.personInfo);
 		this.currentB = this.blood
 		this.currentM = this.magic
 		this.canOpera = true;
 		this.times = 0;
 		this.defaultAction = 'default-right'
+		this.attackTimer1 = null;
+		this.attackTimer2 = null;
 		this.timeInter = [];
 		this.timeTimeout = []
 	}
@@ -43,7 +47,7 @@ class Person extends React.Component {
 					this.times = 100;
 					Item = SingleAttack[random(0, SingleAttack.length)];
 					this.defaultAction = Item.action;
-					this.RobatAttack(3, Item.time);
+					this.RobatAttack(Item.hurt, Item.time);
 					this.RobatAction(Item.action, Item.left, Item.top, Math.random());
 				}
 				this.times += 100;
@@ -64,6 +68,8 @@ class Person extends React.Component {
 
 	RobatAction(action, left, top, random) {
 		clearInterval(this.moveTime);
+		// clearTimeout(this.attackTimer1);
+		// clearInterval(this.attackTimer2);
 		this.timeInter.push(this.moveTime);
 		this.moveTime = setInterval(() => {
 			if (this.currentB <= 0) { // 没血的时候静止不动;
@@ -110,17 +116,29 @@ class Person extends React.Component {
 			personInfo.seniority -= Math.round(Math.abs(person.seniority) / 50);
 		}
 		if (personInfo.level > this.level) {
-			this.blood = 5 + (personInfo.level * 5) + (personInfo.level - 0);
-			this.magic = 3 + (personInfo.level * 3) + (personInfo.level - 0);
+			this.blood = getBlood(personInfo);
+			this.magic = getMagic(personInfo);
 			this.currentB = this.blood
 			this.currentM = this.magic
 			this.bloodLine.style.width = '100%';
 			this.magicLine.style.width = '100%';
-			personInfo.experience = Math.round((personInfo.experience - (personInfo.level - 1) * 1500) * 0.55 + (personInfo.level - 1) * 1500);
+			personInfo.experience = getExperience(personInfo);
 			this.level = personInfo.level;
-			// 升级了。系统公告   震铄古今   人神共愤 群起而诛之
+			// 升级了。系统公告
 			if (!AI) {
-				window.StatusPerson.setMes('恭喜你升到了' + this.level + '级！');
+				setTimeout(() =>{
+					window.USER.setPlay({
+						name: this.props.personInfo.name,
+						level: this.props.personInfo.level,
+						blood: this.blood,
+						currentB: this.currentB,
+						magic: this.magic,
+						currentM: this.currentM
+					})
+				})
+				setTimeout(() =>{
+					window.StatusPerson.setMes('恭喜你升到了' + this.level + '级！');
+				})
 			}
 		}
 		let mes = '';
@@ -149,6 +167,8 @@ class Person extends React.Component {
 	PlayAction(action, time, defaultActiom) { // 人物动作；
 		this.defaultAction = action;
 		clearTimeout(this.beforeAction);
+		clearTimeout(this.attackTimer1);
+		clearInterval(this.attackTimer2);
 		if (!this.person) {
 			return;
 		}
@@ -163,17 +183,37 @@ class Person extends React.Component {
 			}, time);
 		}
 	}
-	PlayAttack(hurt, s) { // attack 为伤害值;  玩家
+	PlayAttack(hurt, s) { // attack 为伤害值;  玩家 s为时间
+		clearTimeout(this.attackTimer1);
+		clearInterval(this.attackTimer2);
+		if (!s) {
+			return;
+		}
 		const position = this.getPlayPosition();
 		if (!position) {
 			return;
 		}
 		const left = position.left;
 		const top = position.top;
-		this.radar(left, top, hurt);
+		let time = 0;
+		this.attackTimer1 = setTimeout(() => {
+			time += 400;
+			this.radar(left, top, hurt);
+			this.attackTimer2 = setInterval(() => {
+				time += 550;
+				if (time >= s) {
+					clearInterval(this.attackTimer2);
+					return;
+				}
+				this.radar(left, top, hurt);
+			},550);
+		}, 400)
+		this.timeTimeout.push(this.attackTimer1);
+		this.timeInter.push(this.attackTimer2);
 	}
 
 	radar(left, top, hurt) { // 雷达;
+		let byAttaPerson = null;
 		window.AIPersonSystem.forEach((person, idx) => {
 			const position = person.getPosition();
 			if (!position) {
@@ -181,14 +221,18 @@ class Person extends React.Component {
 			}
 			const Pleft = position.left;
 			const Ptop = position.top;
-			if (Pleft >= left - 65 && Pleft <= left + 65 && Ptop >= top - 35 && Ptop <= top + 35 && person.props.id !== this.props.id) {
-				if (!person.focus) {
-					person.focus = true;
-					person.Beaten(hurt, this.props.personInfo, this);
-					setTimeout(() => {
-						person.focus = false;;
-					}, 600);
+			if (Pleft >= left - getHurtRange().X && Pleft <= left + getHurtRange().X && Ptop >= top - getHurtRange().Y && Ptop <= top + getHurtRange().Y && person.props.id !== this.props.id) {
+				if (this.byattackList[person.props.id]) {
+				} else {
+					this.attackList[person.props.id] = {
+						time: (new Date()).getTime()
+					}
+					person.byattackList[this.props.id] = {
+						time: (new Date()).getTime()
+					}
 				}
+				byAttaPerson = person;
+				person.Beaten(hurt, this.props.personInfo, this);
 			}
 		});
 		{ // 打击用户
@@ -198,22 +242,56 @@ class Person extends React.Component {
 			}
 			const Pleft = position.left;
 			const Ptop = position.top;
-			if (Pleft >= left - 65 && Pleft <= left + 65 && Ptop >= top - 35 && Ptop <= top + 35 && window.PLAYER.props.id !== this.props.id) {
-				if (!window.PLAYER.focus) {
-					window.PLAYER.focus = true;
-					window.PLAYER.Beaten(hurt, this.props.personInfo, this);
-					setTimeout(() => {
-						window.PLAYER.focus = false;;
-					}, 600);
+			if (Pleft >= left - getHurtRange().X && Pleft <= left + getHurtRange().X && Ptop >= top - getHurtRange().Y && Ptop <= top + getHurtRange().Y && window.PLAYER.props.id !== this.props.id) {
+				if (!this.byattackList[window.PLAYER.props.id]) {
+					this.attackList[window.PLAYER.props.id] = {
+						time: (new Date()).getTime()
+					}
+					if (!window.PLAYER.byattackList[this.props.id]) {
+						window.StatusPerson.setMes('你正受到['+ this.props.personInfo.name + ']的攻击!');
+					}
+					window.PLAYER.byattackList[this.props.id] = {
+						time: (new Date()).getTime()
+					}
 				}
-				
+				window.PLAYER.Beaten(hurt, this.props.personInfo, this);
 			}
+		}
+		if (byAttaPerson && !this.props.AI) {
+			window.USER.setOther({ // 挨打的时候
+				name: byAttaPerson.props.personInfo.name,
+				level: byAttaPerson.props.personInfo.level,
+				blood: byAttaPerson.blood,
+				currentB: byAttaPerson.currentB,
+				magic: byAttaPerson.magic,
+				currentM: byAttaPerson.currentM
+			})
 		}
 	}
 	RobatAttack(hurt, s) { // attack 为伤害值;   机器人
+		clearTimeout(this.attackTimer1);
+		clearInterval(this.attackTimer2);
+		if (!s) {
+			return;
+		}
 		const left = getStyle(this.person, 'left');
 		const top = getStyle(this.person, 'top');
-		this.radar(left, top, hurt);
+		let time = 0;
+		this.attackTimer1 = setTimeout(() => {
+			time += 150;
+			this.radar(left, top, hurt);
+			this.attackTimer2 = setInterval(() => {
+				time += 680;
+				if (time >= s) {
+					clearInterval(this.attackTimer2);
+					return;
+				}
+				
+				this.radar(left, top, hurt);
+			},680);
+		}, 200)
+		this.timeTimeout.push(this.attackTimer1);
+		this.timeInter.push(this.attackTimer2);
 	}
 
 	Beaten(hurt, killUser, me) {
@@ -221,13 +299,12 @@ class Person extends React.Component {
 			return;
 		}
 		const { personInfo, dieEvent, AI } = this.props;
-		hurt = (killUser.level - personInfo.level) * 0.25 + killUser.level + hurt * 0.8;
-		hurt = Math.round(hurt);
+		hurt = getHurt(hurt, personInfo, killUser);
+		this.showHurt(hurt); // 设置弹出血
 		this.currentB -= (hurt || 0);
 		this.currentB = this.currentB < 0 ? 0 : this.currentB;
-		const percent = this.currentB / this.blood * 100 + '%';
+		const percent = Math.round(this.currentB / this.blood * 100) + '%';
 		this.bloodLine.style.width = percent;
-
 		if (this.currentB <= 0) {
 			this.canOpera = false;
 			this.timeTimeout.push(setTimeout(() => {
@@ -275,6 +352,21 @@ class Person extends React.Component {
 			})
 		}
 	}
+
+	showHurt(hurt) {
+		clearTimeout(this.hurtTimer);
+		this.hurtValueshow.innerHTML = '';
+		this.hurtValueshow.className="person-hurt";
+		clearTimeout(this.hurtTimer);
+		this.hurtTimer = setTimeout(() => {
+			this.hurtValueshow.innerHTML = '';
+			this.hurtValueshow.className="person-hurt";
+		}, 500);
+		this.timeTimeout.push(this.hurtTimer);
+		this.hurtValueshow.innerHTML = hurt;
+		this.hurtValueshow.className="person-hurt2";
+	}
+
 	addBlood() {
 
 	}
@@ -376,6 +468,8 @@ class Person extends React.Component {
 				onMouseDown={this.showPersonInfo.bind(this)}
 			>
 				<div className="person-info" key={this.state.reflush}>
+					<div className="person-hurt" ref={c => this.hurtValueshow = c}></div>
+					<div className="person-hurt-valid" ref={c => this.validHurtValueshow = c}>未击中</div>
 					<div className="person-name" style={{ color }}>{name}</div>
 					<div className="blood">
 						<div className="wrap">

@@ -57,7 +57,7 @@ class Map extends React.Component {
 		me.KILLPERSON(personInfo); // 调用方法，增加经验;
 	}
 	loadPerson() {
-		for (let i = 0; i < 20; i++) {
+		for (let i = 0; i < 1; i++) {
 			this.persons.push(<Person
 				ref={c => window.AIPersonSystem.push(c)}
 				getExperience={this.props.getExperience}

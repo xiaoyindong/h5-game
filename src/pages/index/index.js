@@ -166,7 +166,7 @@ class App extends React.Component {
 				<div className="user-experience" key={this.state.reflush}>
 					<div className="value">{`${window.USERINFO.experience - (window.USERINFO.level - 1) * 1500}/1500`}</div>
 					<div className="line-wrap">
-						<div className="line" style={{ width: (window.USERINFO.experience - (window.USERINFO.level - 1) * 1500) / 10 + '%' }} />
+						<div className="line" style={{ width: (window.USERINFO.experience - (window.USERINFO.level - 1) * 1500) / 15 + '%' }} />
 					</div>
 				</div>
 			</div>
