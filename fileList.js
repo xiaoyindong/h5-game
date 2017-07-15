@@ -28,9 +28,15 @@ const htmlList = [];
 const htmlFiles = geFileMap('./html', true);
 const entry = geFileMap(path);
 const images = geFileMap('./src/images', true);
+const musics = geFileMap('./src/music', true);
 for (const image in images) {
     entry[image] = images[image];
 }
+
+for (const music in musics) {
+    entry[music] = musics[music];
+}
+
 for (const html in htmlFiles) {
     htmlList.push(
         new HtmlWebpackPlugin({

@@ -38,6 +38,14 @@ const config = {
                 ]
             },
             {
+                test: /\.(mp3)$/,
+                use: [ // use 作用是使用多个loader
+                    {
+                        loader: 'file-loader?name=music/[name].[ext]'
+                    }
+                ]
+            },
+            {
                 test: /\.(woff|woff2|eot|ttf|otf)$/, loader: 'file-loader'
             },
             {
