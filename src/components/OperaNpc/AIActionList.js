@@ -1,4 +1,5 @@
 import { random } from '../Utils';
+
 export const NoHarm = [
     { // 向右走
         action: 'walk-right',

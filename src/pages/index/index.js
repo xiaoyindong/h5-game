@@ -12,7 +12,7 @@ window.USERINFO = {
 	name: '古川',
 	level: 1,
 	tools: [],
-	seniority: -10000,
+	seniority: 0,
 	experience: 0
 }
 class App extends React.Component {
@@ -35,6 +35,7 @@ class App extends React.Component {
 		document.addEventListener('keyup', this.keyUp.bind(this));
 		window.StatusPerson.setMes('欢迎进入游戏');
 		this.CoordiNate();
+		window.BACKGROUNDMUSIC.play();
 	}
 	CoordiNate() {
 		const timer = setInterval(() =>{
@@ -131,6 +132,7 @@ class App extends React.Component {
 	}
 	dieEvent() {
 		this.Opera = false;
+		window.PLAYER.isDie = true;
 		console.log('玩家死亡');
 	}
 	getExperience(systemMes) { // 系统公告
@@ -169,6 +171,8 @@ class App extends React.Component {
 						<div className="line" style={{ width: (window.USERINFO.experience - (window.USERINFO.level - 1) * 1500) / 15 + '%' }} />
 					</div>
 				</div>
+				<audio src="../../music/background.mp3" className="audio-background" ref={(c) => window.BACKGROUNDMUSIC = c} loop="loop"></audio>
+				<audio src="" ref={(c) => window.KILLPERSON = c} className="audio-background"></audio>
 			</div>
 		)
 	}

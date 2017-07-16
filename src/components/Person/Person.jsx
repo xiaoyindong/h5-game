@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { deepCopy, getStyle, random, getBlood, getMagic, getExperience, getHurt, getHurtRange, ArrayPush, ArrayDelete, ArrayContains } from '../Utils';
-import { NoHarm, SingleAttack, GroupAttack } from './AIActionList';
 require('./style');
 class Person extends React.Component {
 	constructor(props) {
@@ -9,8 +8,8 @@ class Person extends React.Component {
 		this.state = {
 			reflush: 1
 		}
-		this.attackList= {}; // 主动攻击的用户; 用于计算主动被动;
-		this.byattackList= {}; // 被动攻击的用户; 用于计算主动被动 
+		this.attackList = {}; // 主动攻击的用户; 用于计算主动被动;
+		this.byattackList = {}; // 被动攻击的用户; 用于计算主动被动 
 		this.level = props.personInfo.level;
 		this.blood = getBlood(props.personInfo);
 		this.magic = getMagic(props.personInfo);
@@ -22,7 +21,8 @@ class Person extends React.Component {
 		this.attackTimer1 = null;
 		this.attackTimer2 = null;
 		this.timeInter = [];
-		this.timeTimeout = []
+		this.timeTimeout = [];
+		this.killNum = 0;
 	}
 	componentDidMount() {
 		const { action, AI, left, top } = this.props;
@@ -30,31 +30,7 @@ class Person extends React.Component {
 			return;
 		}
 		this.person.style.cssText = 'background: url(../../images/' + (action || 'default-right') + '.gif?temp=' + Math.random() + '); background-repeat: no-repeat;background-size: cover; left:' + left + 'px; top: ' + top + 'px';
-		if (AI) {
-			let Item = SingleAttack[random(0, SingleAttack.length)];
-			this.defaultAction = Item.action;
-			this.RobatAction(Item.action, Item.left, Item.top, Math.random());
-			const timer = setInterval(() => {
-				if (this.currentB <= 0) { // 没血的时候静止不动;
-					clearInterval(timer);
-				}
-				if (!this.person) {
-					clearInterval(timer);
-					clearInterval(this.moveTime);
-					return;
-				}
-				if (this.times > Item.time) {
-					this.times = 100;
-					Item = SingleAttack[random(0, SingleAttack.length)];
-					this.defaultAction = Item.action;
-					this.RobatAttack(Item.hurt, Item.time);
-					this.RobatAction(Item.action, Item.left, Item.top, Math.random());
-				}
-				this.times += 100;
-			}, 100)
-			this.timeInter.push(timer);
-			return;
-		} else {
+		if (!AI) {
 			window.USER.setPlay({ // 挨打的时候
 				name: this.props.personInfo.name,
 				level: this.props.personInfo.level,
@@ -65,12 +41,49 @@ class Person extends React.Component {
 			})
 		}
 	}
-
-	RobatAction(action, left, top, random) {
+	RobatActionByXY(x, y, random, handle) {
 		clearInterval(this.moveTime);
-		// clearTimeout(this.attackTimer1);
-		// clearInterval(this.attackTimer2);
-		this.timeInter.push(this.moveTime);
+		clearTimeout(this.attackTimer1);
+		clearInterval(this.attackTimer2);
+		let action = 'default-right';
+		const position = this.getPosition();
+		const X = position.left;
+		const Y = position.top;
+		const long = Math.abs(y - Y) > Math.abs(x - X) ? y + Math.abs(y - Y) : x + Math.abs(x - X);
+		let time = 0;
+		let left = 0;
+		let top = 0;
+		if (Math.abs(y - Y) > Math.abs(x - X) && Math.abs(y - Y) !== 0) { // Y 轴
+			top = 3;
+			time = (Math.abs(y - Y) / 3);
+			if (Math.abs(x - X) !== 0) {
+				left = Math.round(Math.abs(x - X) / time);
+			} else {
+				left = 0;
+			}
+
+		} else if (Math.abs(x - X) !== 0) { // X 轴
+			left = 3;
+			time = (Math.abs(x - X) / 3);
+			if (Math.abs(y - Y) !== 0) {
+				top = Math.round(Math.abs(y - Y) / time);
+			} else {
+				top = 0;
+			}
+		}
+		const hurtRange = getHurtRange();
+		if (Math.abs(x - X) <= 20 && Math.abs(y - Y) <= 15) {
+			handle && handle();
+			clearInterval(this.moveTime);
+			return;
+		}
+		left = x > X ? left : 0 - left;
+		top = y > Y ? top : 0 - top;
+		if (left > 0) {
+			action = 'run-right2';
+		} else if (left < 0) {
+			action = 'run-left2';
+		}
 		this.moveTime = setInterval(() => {
 			if (this.currentB <= 0) { // 没血的时候静止不动;
 				clearInterval(this.moveTime);
@@ -92,17 +105,33 @@ class Person extends React.Component {
 			if (!this.person) {
 				return;
 			}
+			if (Math.abs(this.getPosition().left - x) <= 20 && Math.abs(this.getPosition().top - y) <= 15) {
+				this.person.style.cssText = 'background: url(../../images/' + (action || 'default-right') + '.gif?temp=' + random + '); background-repeat: no-repeat;background-size: cover; left:' + x + 'px; top: ' + y + 'px';
+				handle && handle();
+				clearInterval(this.moveTime);
+				return;
+			}
 			this.person.style.cssText = 'background: url(../../images/' + (action || 'default-right') + '.gif?temp=' + random + '); background-repeat: no-repeat;background-size: cover; left:' + disX + 'px; top: ' + disY + 'px';
-		}, 14)
+		}, 14);
+		this.timeInter.push(this.moveTime);
 	}
 
 	componentDidUpdate(prop) {
 	}
 
-	KILLPERSON(person) {
+	KILLPERSON(person, id) {
 		const { personInfo, AI } = this.props;
 		personInfo.experience += Math.round((person.level / personInfo.level) * 50 + 160 * (5 / personInfo.level)); // 经验
 		personInfo.level = parseInt(personInfo.experience / 1500) + 1; // 等级
+		this.killNum += 1; // 统计杀人个数
+		if (this.killNum > 0) {
+			const num = this.killNum > 10 ? 10 : this.killNum;
+			if (num >= 4 || !AI) {
+				window.KILLPERSON.src = '../../music/fuck' + num + '.mp3';
+				window.KILLPERSON.load();
+				window.KILLPERSON.play();
+			}
+		}
 		// 资历值
 		if (person.seniority < 0) {
 			if (!AI) {
@@ -110,10 +139,14 @@ class Person extends React.Component {
 			}
 			personInfo.seniority += Math.round(Math.abs(person.seniority) / 300);
 		} else {
-			if (!AI) {
+			let off = this.byattackList[id] ? false : true;
+			this.byattackList[id];
+			if (!AI && off) {
 				window.StatusPerson.setMes('你杀人了,资历值降低');
 			}
-			personInfo.seniority -= Math.round(Math.abs(person.seniority) / 50);
+			if (off) {
+				personInfo.seniority -= Math.round(Math.abs(person.seniority) / 50);
+			}
 		}
 		if (personInfo.level > this.level) {
 			this.blood = getBlood(personInfo);
@@ -126,7 +159,7 @@ class Person extends React.Component {
 			this.level = personInfo.level;
 			// 升级了。系统公告
 			if (!AI) {
-				setTimeout(() =>{
+				setTimeout(() => {
 					window.USER.setPlay({
 						name: this.props.personInfo.name,
 						level: this.props.personInfo.level,
@@ -136,7 +169,7 @@ class Person extends React.Component {
 						currentM: this.currentM
 					})
 				})
-				setTimeout(() =>{
+				setTimeout(() => {
 					window.StatusPerson.setMes('恭喜你升到了' + this.level + '级！');
 				})
 			}
@@ -197,7 +230,10 @@ class Person extends React.Component {
 		const top = position.top;
 		let time = 0;
 		this.attackTimer1 = setTimeout(() => {
-			time += 400;
+			time += 800;
+			if (this.isDie) {
+				return;
+			}
 			this.radar(left, top, hurt);
 			this.attackTimer2 = setInterval(() => {
 				time += 550;
@@ -205,9 +241,12 @@ class Person extends React.Component {
 					clearInterval(this.attackTimer2);
 					return;
 				}
+				if (this.isDie) {
+					return;
+				}
 				this.radar(left, top, hurt);
-			},550);
-		}, 400)
+			}, 550);
+		}, 260)
 		this.timeTimeout.push(this.attackTimer1);
 		this.timeInter.push(this.attackTimer2);
 	}
@@ -221,9 +260,8 @@ class Person extends React.Component {
 			}
 			const Pleft = position.left;
 			const Ptop = position.top;
-			if (Pleft >= left - getHurtRange().X && Pleft <= left + getHurtRange().X && Ptop >= top - getHurtRange().Y && Ptop <= top + getHurtRange().Y && person.props.id !== this.props.id) {
-				if (this.byattackList[person.props.id]) {
-				} else {
+			if (!person.isDie && Pleft >= left - getHurtRange().X && Pleft <= left + getHurtRange().X && Ptop >= top - getHurtRange().Y && Ptop <= top + getHurtRange().Y && person.props.id !== this.props.id) {
+				if (!this.byattackList[person.props.id]) {
 					this.attackList[person.props.id] = {
 						time: (new Date()).getTime()
 					}
@@ -242,13 +280,13 @@ class Person extends React.Component {
 			}
 			const Pleft = position.left;
 			const Ptop = position.top;
-			if (Pleft >= left - getHurtRange().X && Pleft <= left + getHurtRange().X && Ptop >= top - getHurtRange().Y && Ptop <= top + getHurtRange().Y && window.PLAYER.props.id !== this.props.id) {
+			if (!window.PLAYER.isDie && Pleft >= left - getHurtRange().X && Pleft <= left + getHurtRange().X && Ptop >= top - getHurtRange().Y && Ptop <= top + getHurtRange().Y && window.PLAYER.props.id !== this.props.id) {
 				if (!this.byattackList[window.PLAYER.props.id]) {
 					this.attackList[window.PLAYER.props.id] = {
 						time: (new Date()).getTime()
 					}
 					if (!window.PLAYER.byattackList[this.props.id]) {
-						window.StatusPerson.setMes('你正受到['+ this.props.personInfo.name + ']的攻击!');
+						window.StatusPerson.setMes('你正受到[' + this.props.personInfo.name + ']的攻击!');
 					}
 					window.PLAYER.byattackList[this.props.id] = {
 						time: (new Date()).getTime()
@@ -268,9 +306,19 @@ class Person extends React.Component {
 			})
 		}
 	}
-	RobatAttack(hurt, s) { // attack 为伤害值;   机器人
+	RobatAttack(action, hurt, s, random) { // attack 为伤害值;   机器人
 		clearTimeout(this.attackTimer1);
 		clearInterval(this.attackTimer2);
+
+		if (this.currentB <= 0) { // 没血的时候静止不动;
+			clearInterval(this.moveTime);
+			action = action.indexOf('right') !== -1 ? 'die-right' : 'die-left';
+		}
+		if (!this.person) {
+			return;
+		}
+		this.person.style.backgroundImage = 'url(../../images/' + (action || 'default-right') + '.gif?temp=' + random + ')';
+
 		if (!s) {
 			return;
 		}
@@ -278,17 +326,22 @@ class Person extends React.Component {
 		const top = getStyle(this.person, 'top');
 		let time = 0;
 		this.attackTimer1 = setTimeout(() => {
-			time += 150;
+			time += 800;
+			if (this.isDie) {
+				return;
+			}
 			this.radar(left, top, hurt);
 			this.attackTimer2 = setInterval(() => {
-				time += 680;
+				time += 500;
 				if (time >= s) {
 					clearInterval(this.attackTimer2);
 					return;
 				}
-				
+				if (this.isDie) {
+					return;
+				}
 				this.radar(left, top, hurt);
-			},680);
+			}, 500);
 		}, 200)
 		this.timeTimeout.push(this.attackTimer1);
 		this.timeInter.push(this.attackTimer2);
@@ -354,17 +407,31 @@ class Person extends React.Component {
 	}
 
 	showHurt(hurt) {
-		clearTimeout(this.hurtTimer);
-		this.hurtValueshow.innerHTML = '';
-		this.hurtValueshow.className="person-hurt";
-		clearTimeout(this.hurtTimer);
-		this.hurtTimer = setTimeout(() => {
+		if (hurt === 0) {
+			clearTimeout(this.hurtTimer);
+			this.validHurtValueshow.innerHTML = '';
+			this.validHurtValueshow.className = "person-hurt-valid";
+			clearTimeout(this.hurtTimer);
+			this.hurtTimer = setTimeout(() => {
+				this.validHurtValueshow.innerHTML = '';
+				this.validHurtValueshow.className = "person-hurt-valid";
+			}, 500);
+			this.timeTimeout.push(this.hurtTimer);
+			this.validHurtValueshow.innerHTML = '未击中';
+			this.validHurtValueshow.className = "person-hurt2-valid";
+		} else {
+			clearTimeout(this.hurtTimer);
 			this.hurtValueshow.innerHTML = '';
-			this.hurtValueshow.className="person-hurt";
-		}, 500);
-		this.timeTimeout.push(this.hurtTimer);
-		this.hurtValueshow.innerHTML = hurt;
-		this.hurtValueshow.className="person-hurt2";
+			this.hurtValueshow.className = "person-hurt";
+			clearTimeout(this.hurtTimer);
+			this.hurtTimer = setTimeout(() => {
+				this.hurtValueshow.innerHTML = '';
+				this.hurtValueshow.className = "person-hurt";
+			}, 500);
+			this.timeTimeout.push(this.hurtTimer);
+			this.hurtValueshow.innerHTML = hurt;
+			this.hurtValueshow.className = "person-hurt2";
+		}
 	}
 
 	addBlood() {
@@ -468,8 +535,8 @@ class Person extends React.Component {
 				onMouseDown={this.showPersonInfo.bind(this)}
 			>
 				<div className="person-info" key={this.state.reflush}>
-					<div className="person-hurt" ref={c => this.hurtValueshow = c}></div>
-					<div className="person-hurt-valid" ref={c => this.validHurtValueshow = c}>未击中</div>
+					<div className="person-hurt" ref={c => this.hurtValueshow = c} />
+					<div className="person-hurt-valid" ref={c => this.validHurtValueshow = c} />
 					<div className="person-name" style={{ color }}>{name}</div>
 					<div className="blood">
 						<div className="wrap">

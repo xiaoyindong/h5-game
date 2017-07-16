@@ -39,7 +39,7 @@ export const getPerson = (Min, Max) => {
 	const name = NAME[random(0, NAME.length)] + NAME[random(0, NAME.length)] + NAME[random(0, NAME.length)];
 	const tools = []; // 装备
 	const seniority = random(-15000, 15000); // 罪恶值 0白名，1500 天蓝， 3000深蓝  6000+ 橙色  10000 + 金色
-	const experience = random(100, 1500); // 经验
+	const experience = random(100, 15000); // 经验
 	const level = parseInt(experience/1500) + 1; // 等级
 	return {
 		name,
@@ -61,7 +61,8 @@ export const getExperience = (personInfo) => {
 	return Math.round((personInfo.experience - (personInfo.level - 1) * 1500) * 0.55 + (personInfo.level - 1) * 1500);
 }
 export const getHurt = (hurt, personInfo, killUser) => {
-	return Math.round((killUser.level - personInfo.level) * 0.45 + killUser.level + hurt * 0.8);
+	const value = Math.round((killUser.level - personInfo.level) * 0.45 + killUser.level + hurt * 0.8);
+	return value < 0 ? 0 : value;
 }
 export const getHurtRange = () => {
 	return {

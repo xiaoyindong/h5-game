@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { getStyle, random, getPerson } from '../Utils';
 import Person from '../Person';
+import { personAction } from '../OperaNpc';
 require('./style');
 class Map extends React.Component {
 	constructor(props) {
@@ -14,6 +15,7 @@ class Map extends React.Component {
 	componentDidMount() {
 		setTimeout(() => {
 			this.loadPerson();
+			personAction();
 		})
 	}
 
@@ -49,15 +51,18 @@ class Map extends React.Component {
 		window.MessageSystem.addMessage(message, 'system', 'system', 'all');
 		window.AIPersonSystem.forEach((item, idx) => {
 			if (item.props.id === id) {
-				item.setDestory();
+				setTimeout(() => {
+					item.setDestory();
+				}, 3000);
+				item.isDie = true;
 				window.AIPersonSystem.splice(idx, 1);
 				return;
 			}
 		});
-		me.KILLPERSON(personInfo); // 调用方法，增加经验;
+		me.KILLPERSON(personInfo, id); // 调用方法，增加经验;
 	}
 	loadPerson() {
-		for (let i = 0; i < 1; i++) {
+		for (let i = 0; i < 12; i++) {
 			this.persons.push(<Person
 				ref={c => window.AIPersonSystem.push(c)}
 				getExperience={this.props.getExperience}
