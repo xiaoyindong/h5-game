@@ -2,20 +2,23 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { getStyle, random, getPerson } from '../Utils';
 import Person from '../Person';
-import { personAction } from '../OperaNpc';
 require('./style');
 class Map extends React.Component {
 	constructor(props) {
 		super(props);
+		this.state = {
+			index: 10000
+		}
 		this.left = -870;
 		this.top = -530;
 		this.timer = null;
 		this.persons = [];
+		this.personNum = 16;
+		this.dieList = [];
 	}
 	componentDidMount() {
 		setTimeout(() => {
 			this.loadPerson();
-			personAction();
 		})
 	}
 
@@ -44,25 +47,30 @@ class Map extends React.Component {
 			this.position.style.left = this.left + 'px ';
 		}, 16)
 	}
-	dieEvent(info, killUser, me) {
-		const { id, personInfo } = info;
-		const { name } = killUser;
-		const message = '惊！！' + personInfo.name + '被' + name + '杀死了';
-		window.MessageSystem.addMessage(message, 'system', 'system', 'all');
-		window.AIPersonSystem.forEach((item, idx) => {
-			if (item.props.id === id) {
-				setTimeout(() => {
-					item.setDestory();
-				}, 3000);
-				item.isDie = true;
-				window.AIPersonSystem.splice(idx, 1);
-				return;
-			}
-		});
-		me.KILLPERSON(personInfo, id); // 调用方法，增加经验;
+	dieEvent(info, killUser, me, bool) {
+		if (!bool) {
+			const { id, personInfo } = info;
+			const { name } = killUser;
+			const message = '惊！！' + personInfo.name + '被' + name + '杀死了';
+			window.MessageSystem.addMessage(message, 'system', 'system', 'all');
+			window.AIPersonSystem.forEach((item, idx) => {
+				if (!item) {
+					return;
+				}
+				if (item.props.id === id) {
+					this.dieList.push(item);
+					return;
+				}
+			});
+			me.KILLPERSON(personInfo, id); // 调用方法，增加经验;
+		}
+		if (bool) {
+			this.addPerson();
+		}
+
 	}
 	loadPerson() {
-		for (let i = 0; i < 12; i++) {
+		for (let i = 0; i < this.personNum; i++) {
 			this.persons.push(<Person
 				ref={c => window.AIPersonSystem.push(c)}
 				getExperience={this.props.getExperience}
@@ -70,11 +78,26 @@ class Map extends React.Component {
 				left={random(220, 1800)} // 出生位置
 				top={random(280, 900)} // 出生位置
 				preClass={'person-ai'}
-				key={i} personInfo={getPerson()}
-				AI={true} blood={0}
+				key={i}
+				personInfo={getPerson()}
+				AI={true}
 				dieEvent={this.dieEvent.bind(this)} />)
 		}
-		this.setState({ refresh: Math.random()});
+		return this.persons;
+	}
+	addPerson() {
+		if (Math.round(this.persons.length/2) > this.dieList.length) {
+			return;
+		}
+		setTimeout(() => {
+			this.dieList.forEach((person, idx) => {
+				person.person.style.opacity = 1;
+				person.props.personInfo = getPerson();
+				person.props.left = random(220, 1800);
+				person.props.top = random(280, 900);
+				person.Resurrection();
+			})
+		}, 2000)
 	}
 	getPosition() {
 		return {
@@ -86,7 +109,7 @@ class Map extends React.Component {
 		return (
 			<div className="map-wrap" ref={c => this.position = c}>
 				{
-					this.persons
+					this.loadPerson()
 				}
 			</div>
 		)

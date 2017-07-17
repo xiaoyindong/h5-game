@@ -1,12 +1,11 @@
-# Project
-webpack 脚手架
+#安装依赖
+npm install
 
-# html 
-    静态页面， 需要引入 js 和 css   名字与page中的名字一致
+#启动
+npm run start
 
-# src
-    文件资源路径
-    #page
-        页面对应js
-    #images
-        静态文件
+#打包
+npm run build
+
+#简介
+一块利用react写的格斗小游戏， 火柴人小格斗，聊天，公告，组队，帮会，联网，杀人等功能

@@ -66,8 +66,8 @@ export const getHurt = (hurt, personInfo, killUser) => {
 }
 export const getHurtRange = () => {
 	return {
-		X: 80,
-		Y: 35
+		X: 65,
+		Y: 30
 	};
 }
 export const ArrayPush = (array, value) => {

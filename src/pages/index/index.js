@@ -4,9 +4,11 @@ import Map from '../../components/Map';
 import Person from '../../components/Person';
 import Message from '../../components/Message';
 import Status from '../../components/Status';
+import Npc from '../../components/Npc';
 import UserInfo from '../../components/UserInfo';
 import { getStyle } from '../../components/Utils';
 require('./style');
+console.log(Npc);
 window.AIPersonSystem = []; // 机器人
 window.USERINFO = {
 	name: '古川',
@@ -108,6 +110,9 @@ class App extends React.Component {
 		}
 	}
 	keyUp(e) {
+		if (!this.Opera) {
+			return;
+		}
 		const code = e.keyCode;
 		this.code.forEach((key, idx) => {
 			if (key === code) {
@@ -130,10 +135,19 @@ class App extends React.Component {
 			window.MapSystem.MapMove(left, top);
 		}
 	}
-	dieEvent() {
+	dieEvent(info, killUser, me, bool) {
+		if (!bool) {
+			return;
+		}
 		this.Opera = false;
 		window.PLAYER.isDie = true;
-		console.log('玩家死亡');
+		window.MapSystem.MapMove(0, 0);
+		if(confirm('满血复活')) {
+			this.Opera = true;
+			window.PLAYER.Resurrection();
+		} else {
+			window.close();
+		}
 	}
 	getExperience(systemMes) { // 系统公告
 		if (systemMes) {
@@ -143,7 +157,8 @@ class App extends React.Component {
 				this.setState({ mesKey: this.state.mesKey++ });
 			}, 6500)
 		}
-		this.setState({ reflush: this.state.reflush++ });
+		this.bloodLine.style.width = (window.USERINFO.experience - (window.USERINFO.level - 1) * 1500) / 15 + '%';
+		this.bloodValue.innerHTML = (window.USERINFO.experience - (window.USERINFO.level - 1) * 1500) + '/1500';
 	}
 	render() {
 		return (
@@ -158,6 +173,7 @@ class App extends React.Component {
 				<Person
 					ref={c=> window.PLAYER = c}
 					preClass={''}
+					id={101}
 					personInfo={window.USERINFO}
 					AI={false}
 					dieEvent={this.dieEvent.bind(this)}
@@ -165,10 +181,10 @@ class App extends React.Component {
 				/>
 				<Message ref={c => window.MessageSystem = c} />
 				<Status ref={c => window.StatusPerson = c} />
-				<div className="user-experience" key={this.state.reflush}>
-					<div className="value">{`${window.USERINFO.experience - (window.USERINFO.level - 1) * 1500}/1500`}</div>
+				<div className="user-experience">
+					<div className="value" ref={c => this.bloodValue = c} >{}</div>
 					<div className="line-wrap">
-						<div className="line" style={{ width: (window.USERINFO.experience - (window.USERINFO.level - 1) * 1500) / 15 + '%' }} />
+						<div className="line" ref={c => this.bloodLine = c} />
 					</div>
 				</div>
 				<audio src="../../music/background.mp3" className="audio-background" ref={(c) => window.BACKGROUNDMUSIC = c} loop="loop"></audio>
