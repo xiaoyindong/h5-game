@@ -4,11 +4,9 @@ import Map from '../../components/Map';
 import Person from '../../components/Person';
 import Message from '../../components/Message';
 import Status from '../../components/Status';
-import Npc from '../../components/Npc';
 import UserInfo from '../../components/UserInfo';
 import { getStyle } from '../../components/Utils';
 require('./style');
-console.log(Npc);
 window.AIPersonSystem = []; // 机器人
 window.USERINFO = {
 	name: '古川',
@@ -136,18 +134,18 @@ class App extends React.Component {
 		}
 	}
 	dieEvent(info, killUser, me, bool) {
-		if (!bool) {
-			return;
-		}
 		this.Opera = false;
 		window.PLAYER.isDie = true;
 		window.MapSystem.MapMove(0, 0);
-		if(confirm('满血复活')) {
-			this.Opera = true;
-			window.PLAYER.Resurrection();
-		} else {
-			window.close();
-		}
+		person.setDestory();
+		setTimeout(() => {
+			if(confirm('满血复活')) {
+				this.Opera = true;
+				window.PLAYER.Resurrection();
+			} else {
+				window.close();
+			}
+		}, 3000)
 	}
 	getExperience(systemMes) { // 系统公告
 		if (systemMes) {

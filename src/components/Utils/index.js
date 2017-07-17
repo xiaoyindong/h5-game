@@ -100,3 +100,6 @@ export const ArrayContains = (array, value) => {
 	});
 	return off;
 }
+export const personNum = () => {
+	return random(10, 20);
+}

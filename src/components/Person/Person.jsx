@@ -17,7 +17,6 @@ class Person extends React.Component {
 		this.currentB = this.blood
 		this.currentM = this.magic
 		this.canOpera = true;
-		this.times = 0;
 		this.defaultAction = 'default-right'
 		this.attackTimer1 = null;
 		this.attackTimer2 = null;
@@ -292,6 +291,8 @@ class Person extends React.Component {
 				personInfo.seniority -= Math.round(Math.abs(person.seniority) / 50);
 			}
 		}
+		delete this.byattackList[id];
+		delete this.attackList[id];
 		if (personInfo.level > this.level) {
 			this.blood = getBlood(personInfo);
 			this.magic = getMagic(personInfo);
@@ -515,7 +516,7 @@ class Person extends React.Component {
 	}
 
 	Beaten(hurt, killUser, me) {
-		if (!this.person) {
+		if (!this.person || this.isDie) {
 			return;
 		}
 		const { personInfo, dieEvent, AI } = this.props;
@@ -612,6 +613,8 @@ class Person extends React.Component {
 		this.isDie = false;
 		this.killNum = 0;
 		this.bloodLine.style.width = '100%';
+		this.attackList = {};
+		this.byattackList = {};
 		this.setState({ reflush: Math.random() });
 		this.componentDidMount();
 	}
@@ -658,9 +661,9 @@ class Person extends React.Component {
 		}
 	}
 	setDestory() {
-		if (this.person) {
-			this.person.parentNode.removeChild(this.person) // 销毁节点
-		}
+		// if (this.person) {
+		// 	this.person.parentNode.removeChild(this.person) // 销毁节点
+		// }
 		this.timeInter.forEach((item) => {
 			clearInterval(item);
 		});

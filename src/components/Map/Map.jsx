@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { getStyle, random, getPerson } from '../Utils';
+import { getStyle, random, getPerson, personNum } from '../Utils';
 import Person from '../Person';
+import Npc from '../Npc';
 require('./style');
 class Map extends React.Component {
 	constructor(props) {
@@ -13,7 +14,7 @@ class Map extends React.Component {
 		this.top = -530;
 		this.timer = null;
 		this.persons = [];
-		this.personNum = 16;
+		this.personNum = personNum();
 		this.dieList = [];
 	}
 	componentDidMount() {
@@ -85,19 +86,25 @@ class Map extends React.Component {
 		}
 		return this.persons;
 	}
+	loadNpc() {
+		return (
+			<Npc />
+		)
+	}
 	addPerson() {
-		if (Math.round(this.persons.length/2) > this.dieList.length) {
+		if (Math.round(this.personNum/2) > this.dieList.length) {
 			return;
 		}
-		setTimeout(() => {
-			this.dieList.forEach((person, idx) => {
-				person.person.style.opacity = 1;
-				person.props.personInfo = getPerson();
-				person.props.left = random(220, 1800);
-				person.props.top = random(280, 900);
-				person.Resurrection();
-			})
-		}, 2000)
+		// setTimeout(() => {
+		// 	this.dieList.forEach((person, idx) => {
+		// 		person.person.style.opacity = 1;
+		// 		person.props.personInfo = getPerson();
+		// 		person.props.left = random(220, 1800);
+		// 		person.props.top = random(280, 900);
+		// 		person.setDestory();
+		// 		person.Resurrection();
+		// 	})
+		// }, 2000)
 	}
 	getPosition() {
 		return {
@@ -108,6 +115,9 @@ class Map extends React.Component {
 	render() {
 		return (
 			<div className="map-wrap" ref={c => this.position = c}>
+				{
+					this.loadNpc()
+				}
 				{
 					this.loadPerson()
 				}
